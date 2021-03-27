@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Jieba Result</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container text-center mt-2">
+
+        <% for(let i=0; i < data.length;i++) { %>
+            <div class="alert alert-primary">
+                <% Object.keys(data[i]).forEach(function(x) { %>
+                    <p>
+                        <%= x %>,<%= data[i][x] %>
+                    </p>
+                    <% }) %>
+            </div>
+            <% } %>
+    </div>
+
+</body>
+
+</html>

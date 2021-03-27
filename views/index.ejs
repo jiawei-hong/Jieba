@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Jieba Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container mt-2">
+        <form action="./jieba" method="post">
+            <textarea class="form-control mt-2 mb-2" name="text" cols="30"
+                rows="10">三明治一份有兩個，麵包採用老陳咖啡手工自烘的軟法麵包，上頭還有印上老陳的字樣，雖然小小的，不過兩個吃完其實還蠻飽的，除非你本身食量超大。</textarea>
+
+            <select class="form-select" name="dictMode">
+                <option value="1">中文斷詞 (輸出全部斷詞結果)</option>
+                <option value="2">名詞擷取 (僅輸出名詞)</option>
+                <option value="3">動詞擷取 (僅輸出動詞)</option>
+                <option value="4">情緒詞彙擷取 (僅輸出情緒詞彙與情緒分數)</option>
+                <option value="5">情緒詞彙擷取 (輸出文字雲)(目前僅輸出預設的CSV)</option>
+            </select>
+
+            <div class="d-grid gap-1">
+                <input type="submit" class="btn btn-primary mt-2" value="提交">
+            </div>
+        </form>
+    </div>
+</body>
+
+</html>
