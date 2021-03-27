@@ -12,20 +12,21 @@
         <table class="table table-dark table-striped">
             <thead>
                 <th>文字</th>
-                <th>詞性</th>
+                <th>情緒分數</th>
             </thead>
 
             <tbody>
                 <% for(let i=0;i < data.length;i++){ %>
-                    <tr>
-                        <td>
-                            <%= data[i]['word'] %>
-                        </td>
-                        <td>
-                            <%= data[i]['tag'] %>
-                        </td>
-                    </tr>
-                    <% } %>
+                    <% Object.keys(data[i]).forEach(function(key){ %>
+                        <tr>
+                            <td>
+                                <%= key %>
+                            </td>
+                            <td>
+                                <%= data[i][key] %>
+                            </td>
+                        </tr>
+                        <% })} %>
             </tbody>
         </table>
     </div>

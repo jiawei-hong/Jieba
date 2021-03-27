@@ -1,15 +1,12 @@
 const nodejieba = require('nodejieba');
-const bodyParser = require("body-parser");
 let express = require('express')
 let app = express();
 let fs = require('fs');
 
 app.set('view engine', 'ejs');
-app.use(bodyParser.urlencoded({
-    extended: true
-}));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use('/assets', express.static('assets'));
-app.use('/data', express.static('data'));
 
 app.get('/', (req, res) => res.render('index'));
 
@@ -22,57 +19,44 @@ app.post("/jieba", (req, res) => {
 
     switch (dictMode) {
         case 2:
-            data = data.filter(x => jiebaNounFilter.indexOf(x.tag) !== -1);
+            data = data.filter(x => jiebaNounFilter.indexOf(x.tag) !== -1)
             break;
-
         case 3:
-            data = data.filter(x => jiebaVerbFilter.indexOf(x.tag) !== -1);
+            data = data.filter(x => jiebaVerbFilter.indexOf(x.tag) !== -1)
             break;
 
         case 4:
             data = data.filter(x => Object.keys(moodDict).indexOf(x.word) !== -1).map(x => Object.fromEntries([[x.word, moodDict[x.word]]]));
             break;
+        case 5:
+            let postive = [], neutral = [], negative = [];
+
+            data.forEach(word => {
+                Object.keys(moodDict).forEach(mood => {
+                    let existMood = word.word == mood;
+
+                    if (existMood) {
+                        if (moodDict[mood] == 0 && neutral.indexOf(mood) == - 1) {
+                            neutral.push(mood);
+                        } else if (moodDict[mood] < 0 && negative.indexOf(mood) == - 1) {
+                            negative.push(mood);
+                        } else if (postive.indexOf(mood) == - 1) {
+                            postive.push(mood);
+                        }
+                    }
+                });
+            })
+
+            data = { postive, neutral, negative };
+            break;
     }
 
-    if (dictMode == 5) {
-        res.render('draw');
-    } else {
-        res.render('jieba', {
-            data: data
-        });
-    }
-
+    res.render(dictMode == 5 ? 'draw' : dictMode == 4 ? 'mood' : 'jieba', {
+        data: dictMode == 5 ? JSON.stringify(data) : data.filter((ele, index, array) => {
+            return array.indexOf(ele) === index;
+        })
+    });
 });
-
-app.get('/getMoodFilterData', async (req, res) => {
-    let moodDict = Object.fromEntries(fs.readFileSync('mood.txt', 'utf8').split(/\n/).map(x => x.replace(/\r/, '').split('\t')).map(x => x.filter(y => y !== '')));
-    let data = fs.readFileSync('./data/Taichung400.csv', 'utf-8').split('\n').map(x => x.split(',')[1]).filter(x => x !== undefined).map(x => x.replace(/\\"|\s|\"|\r/g, '')).filter(x => x.length > 1);
-    let postive = [], neutral = [], negative = [];
-
-    data.forEach(word => {
-        Object.keys(moodDict).forEach(mood => {
-            let existMood = word.search(mood) !== -1;
-
-            if (existMood) {
-                if (moodDict[mood] == 0 && neutral.indexOf(mood) == - 1) {
-                    neutral.push(mood);
-                } else if (moodDict[mood] < 0 && negative.indexOf(mood) == - 1) {
-                    negative.push(mood);
-                } else if (postive.indexOf(mood) == - 1) {
-                    postive.push(mood);
-                }
-            }
-        });
-    })
-
-    return res.json({ postive, neutral, negative });
-});
-
-app.post('/cloud', (req, res) => {
-
-});
-
-app.get('/draw', (req, res) => res.render('draw'));
 
 app.listen(8080, () => {
     console.log('Server Info: Listening Port 8080');
