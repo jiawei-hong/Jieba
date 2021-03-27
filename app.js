@@ -11,18 +11,16 @@ app.use('/assets', express.static('assets'));
 app.get('/', (req, res) => res.render('index'));
 
 app.post("/jieba", (req, res) => {
-    let jiebaNounFilter = ["n", "nr", "nr1", "nr2", "nrj", "nrf", "ns", "nsf", "nt", "nz", "nl", "ng", "ad", "an", "ag", "al"];
-    let jiebaVerbFilter = ["v", "vd", "vn", "vshi", "vyou", "vf", "vx", "vi", "vl", "vg"];
     let moodDict = Object.fromEntries(fs.readFileSync('mood.txt', 'utf8').split(/\n/).map(x => x.replace(/\r/, '').split('\t')).map(x => x.filter(y => y !== '')));
     let dictMode = parseInt(req.body.dictMode);
     let data = nodejieba.tag(req.body.text);
 
     switch (dictMode) {
         case 2:
-            data = data.filter(x => jiebaNounFilter.indexOf(x.tag) !== -1)
+            data = data.filter(x => x.tag.charAt(0) == 'n')
             break;
         case 3:
-            data = data.filter(x => jiebaVerbFilter.indexOf(x.tag) !== -1)
+            data = data.filter(x => x.tag.charAt(0) == 'v')
             break;
 
         case 4:
