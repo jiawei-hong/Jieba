@@ -1,12 +1,13 @@
 const nodejieba = require('nodejieba');
-let express = require('express')
+const path = require('path');
+let express = require('express');
 let app = express();
 let fs = require('fs');
 
 app.set('view engine', 'ejs');
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-app.use('/assets', express.static('assets'));
+app.use('/assets', express.static(path.resolve('./assets')));
 
 app.get('/', (req, res) => res.render('index'));
 
