@@ -51,8 +51,8 @@ app.post("/jieba", (req, res) => {
     }
 
     res.render(dictMode == 5 ? 'draw' : dictMode == 4 ? 'mood' : 'jieba', {
-        data: dictMode == 5 ? JSON.stringify(data) : data.filter((ele, index, array) => {
-            return array.indexOf(ele) === index;
+        data: dictMode == 5 ? JSON.stringify(data) : data.filter((ele, index, array) => {            
+            return array.map(x => x.word).indexOf(ele.word) === array.indexOf(ele);
         })
     });
 });
