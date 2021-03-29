@@ -53,7 +53,7 @@
 
             var svg_location = `#${chart}`;
             var width = parseInt(d3.select('.alert').style('width'));
-            var height = parseInt(d3.select('.alert').style('height'));
+            var height = parseInt(d3.select('.alert').style('height')) - parseInt(d3.select(`#${chart}`).style('height'));
             var fill = d3.scale.category10();
             var word_entries = d3.entries(word_count);
             var xScale = d3.scale.linear()
