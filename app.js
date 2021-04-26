@@ -5,8 +5,8 @@ let app = express();
 let fs = require('fs');
 
 app.set('view engine', 'ejs');
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(express.json({limit: '50mb'}));
+app.use(express.urlencoded({limit: '50mb', extended: true}));
 app.use('/assets', express.static(path.resolve('./assets')));
 
 app.get('/', (req, res) => res.render('index'));
@@ -15,6 +15,7 @@ app.post("/jieba", (req, res) => {
     let moodDict = Object.fromEntries(fs.readFileSync('mood.txt', 'utf8').split(/\n/).map(x => x.replace(/\r/, '').split('\t')).map(x => x.filter(y => y !== '')));
     let dictMode = parseInt(req.body.dictMode);
     let data = nodejieba.tag(req.body.text);
+    let templateName = 'jieba';
 
     switch (dictMode) {
         case 2:
@@ -25,36 +26,45 @@ app.post("/jieba", (req, res) => {
             break;
         case 4:
             data = data.filter(x => Object.keys(moodDict).indexOf(x.word) !== -1).map(x => Object.fromEntries([[x.word, moodDict[x.word]]]));
+            templateName = 'mood';
             break;
         case 5:
-            let postive = [], neutral = [], negative = [];
+        case 6:
+            let moodKeys = Object.keys(moodDict);
+            let datasets = {
+                positive: [],
+                neutral: [],
+                negative: [],
+            }
 
-            data.forEach(word => {
-                Object.keys(moodDict).forEach(mood => {
-                    let existMood = word.word == mood;
+            if(dictMode == 5){
+                templateName = 'draw';
+            }else{
+                templateName = 'wordcloud';
+            }
 
-                    if (existMood) {
-                        if (moodDict[mood] == 0 && neutral.indexOf(mood) == - 1) {
-                            neutral.push(mood);
-                        } else if (moodDict[mood] < 0 && negative.indexOf(mood) == - 1) {
-                            negative.push(mood);
-                        } else if (postive.indexOf(mood) == - 1) {
-                            postive.push(mood);
-                        }
+
+            data.forEach(x => {
+                if (moodKeys.indexOf(x.word) !== -1) {
+                    if (moodDict[x.word] == 0) {
+                        datasets.neutral.push(x.word);
+                    } else if (moodDict[x.word] < 0) {
+                        datasets.negative.push(x.word);
+                    } else {
+                        datasets.positive.push(x.word);
                     }
-                });
+                }
             })
 
-            data = { postive, neutral, negative };
+            data = datasets;
+
             break;
     }
 
-    res.render(dictMode == 5 ? 'draw' : dictMode == 4 ? 'mood' : 'jieba', {
-        data: dictMode == 5 ? JSON.stringify(data) : data.filter((ele, index, arr) => {
-            let keys = arr.map(x => Object.keys(x)).flat();
+    console.log(data);
 
-            return keys.indexOf(Object.keys(ele)[0]) === index;
-        })
+    res.render(templateName, {
+        data: dictMode == 5 || dictMode == 6 ? JSON.stringify(data) : [...new Set(data)]
     });
 });
 

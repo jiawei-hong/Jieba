@@ -1,0 +1,57 @@
+<html>
+
+<head>
+    <meta charset="utf8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/wordcloud.js"></script>
+</head>
+
+<body>
+<div id="positive" class="container text-center mt-2"></div>
+<div id="neutral" class="container text-center mt-2"></div>
+<div id="negative" class="container text-center mt-2"></div>
+
+<script>
+    Highcharts.seriesTypes.wordcloud.prototype.deriveFontSize = function (relativeWeight) {
+        var maxFontSize = 25;
+        // Will return a fontSize between 0px and 25px.
+
+        if(relativeWeight < 15){
+            return Math.floor(maxFontSize * relativeWeight + 10);
+        }
+    };
+
+    let mood = ['positive', 'neutral', 'negative'];
+    let data = <%- data; %>;
+
+    mood.forEach(moodText => {
+        let moodData = [];
+        data[moodText].forEach(x => {
+            if (moodData.map(x => x.name).flat().indexOf(x) === -1) {
+                moodData.push({
+                    name: x,
+                    weight: data[moodText].filter(d => d == x).length
+                })
+            }
+        });
+
+        Highcharts.chart(moodText, {
+            title: {
+                text: moodText
+            },
+            series: [{
+                type: 'wordcloud',
+                data: moodData,
+                name: '重複次數'
+            }]
+        });
+    });
+</script>
+
+</body>
+
+</html>

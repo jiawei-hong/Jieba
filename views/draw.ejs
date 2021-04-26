@@ -14,8 +14,8 @@
     <div class="container text-center mt-2"></div>
 
     <script>
-        let data = JSON.parse(<%- JSON.stringify(data); %>);
-        let charts = ['postive', 'neutral', 'negative'];
+        let data = <%- data; %>;
+        let charts = ['positive', 'neutral', 'negative'];
 
         function draw(){
             charts.forEach(async chart => {
