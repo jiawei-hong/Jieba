@@ -23,7 +23,6 @@ app.post("/jieba", (req, res) => {
         case 3:
             data = data.filter(x => x.tag.charAt(0) == 'v')
             break;
-
         case 4:
             data = data.filter(x => Object.keys(moodDict).indexOf(x.word) !== -1).map(x => Object.fromEntries([[x.word, moodDict[x.word]]]));
             break;
@@ -51,8 +50,10 @@ app.post("/jieba", (req, res) => {
     }
 
     res.render(dictMode == 5 ? 'draw' : dictMode == 4 ? 'mood' : 'jieba', {
-        data: dictMode == 5 ? JSON.stringify(data) : data.filter((ele, index, array) => {            
-            return array.map(x => x.word).indexOf(ele.word) === array.indexOf(ele);
+        data: dictMode == 5 ? JSON.stringify(data) : data.filter((ele, index, arr) => {
+            let keys = arr.map(x => Object.keys(x)).flat();
+
+            return keys.indexOf(Object.keys(ele)[0]) === index;
         })
     });
 });
