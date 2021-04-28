@@ -1,16 +1,18 @@
-const nodejieba = require('nodejieba');
-let express = require('express');
-let app = express();
-let fs = require('fs');
+import nodejieba from 'nodejieba';
+import path from 'path';
+import express from 'express';
+import fs from 'fs';
+
+const app = express();
 
 nodejieba.load({
-    userDict: __dirname + '/dict.txt'
+    userDict: path.join(path.dirname(''), '/dict.txt')
 });
 
 app.set('view engine', 'ejs');
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb', extended: true}));
-app.use('/assets', express.static(__dirname + '/assets'));
+app.use('/assets', express.static(path.join(path.dirname(''), ('/assets'))));
 
 app.get('/', (req, res) => res.render('index'));
 
@@ -22,10 +24,14 @@ app.post("/jieba", (req, res) => {
 
     switch (dictMode) {
         case 2:
-            data = data.filter(x => x.tag.charAt(0) == 'n')
-            break;
         case 3:
-            data = data.filter(x => x.tag.charAt(0) == 'v')
+
+            if (dictMode == 2) {
+                data = data.filter(x => x.tag.charAt(0) == 'n')
+            } else {
+                data = data.filter(x => x.tag.charAt(0) == 'v')
+            }
+            data = [...new Set(data.map(x => x.word))].map(x => nodejieba.tag(x)).flat();
             break;
         case 4:
             data = data.filter(x => Object.keys(moodDict).indexOf(x.word) !== -1).map(x => Object.fromEntries([[x.word, moodDict[x.word]]]));
@@ -54,15 +60,12 @@ app.post("/jieba", (req, res) => {
                 }
             })
 
-            data = datasets;
+            data = JSON.stringify(datasets);
 
             break;
     }
 
-
-    res.render(templateName, {
-        data: dictMode == 5 || dictMode == 6 ? JSON.stringify(data) : [...new Set(data)]
-    });
+    res.render(templateName, { data });
 });
 
 app.listen(8080, () => {

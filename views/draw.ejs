@@ -11,90 +11,77 @@
 </head>
 
 <body>
-    <div class="container text-center mt-2"></div>
+<div class="container text-center mt-2"></div>
 
-    <script>
-        let data = <%- data; %>;
-        let charts = ['positive', 'neutral', 'negative'];
-
-        function draw(){
-            charts.forEach(async chart => {
-                let container = document.querySelector('.container');
-                let alertDiv = document.createElement('div');
-                let chartDiv = document.createElement('div');
-                let descriptionText = document.createElement('span');
-
-                descriptionText.innerText = chart;
-                alertDiv.className = 'alert alert-primary h-25';
-                chartDiv.id = chart;
-                chartDiv.appendChild(descriptionText);
-                alertDiv.appendChild(chartDiv);
-                container.append(alertDiv);
-
-                drawWordCloud(chart, data[chart]);
-            });
-        }
-
-        draw();
-
-        window.addEventListener('resize',function(){
-            d3.selectAll('.alert').remove();
-
-            draw();
+<script>
+    let data = <%- data; %>;
+    let charts = ['positive', 'neutral', 'negative'];
+    function draw(){
+        charts.forEach(async chart => {
+            let container = document.querySelector('.container');
+            let alertDiv = document.createElement('div');
+            let chartDiv = document.createElement('div');
+            let descriptionText = document.createElement('span');
+            descriptionText.innerText = chart;
+            alertDiv.className = 'alert alert-primary h-25';
+            chartDiv.id = chart;
+            chartDiv.appendChild(descriptionText);
+            alertDiv.appendChild(chartDiv);
+            container.append(alertDiv);
+            drawWordCloud(chart, data[chart]);
         });
-
-        async function drawWordCloud(chart, wordData) {
-            var word_count = {};
-
-            wordData.forEach(x => {
-                word_count[x] = 1;
+    }
+    draw();
+    window.addEventListener('resize',function(){
+        d3.selectAll('.alert').remove();
+        draw();
+    });
+    async function drawWordCloud(chart, wordData) {
+        var word_count = {};
+        wordData.forEach(x => {
+            word_count[x] = 1;
+        })
+        var svg_location = `#${chart}`;
+        var width = parseInt(d3.select('.alert').style('width'));
+        var height = parseInt(d3.select('.alert').style('height')) - parseInt(d3.select(`#${chart}`).style('height'));
+        var fill = d3.scale.category10();
+        var word_entries = d3.entries(word_count);
+        var xScale = d3.scale.linear()
+            .domain([0, d3.max(word_entries, function (d) {
+                return d.value;
             })
-
-
-            var svg_location = `#${chart}`;
-            var width = parseInt(d3.select('.alert').style('width'));
-            var height = parseInt(d3.select('.alert').style('height')) - parseInt(d3.select(`#${chart}`).style('height'));
-            var fill = d3.scale.category10();
-            var word_entries = d3.entries(word_count);
-            var xScale = d3.scale.linear()
-                .domain([0, d3.max(word_entries, function (d) {
-                    return d.value;
+            ])
+            .range([10, 25]);
+        d3.layout.cloud().size([width, height])
+            .timeInterval(20)
+            .words(word_entries)
+            .fontSize(function (d) { return xScale(+d.value); })
+            .text(function (d) { return d.key; })
+            .rotate(function () { return ~~(Math.random() * 2) * 90; })
+            .font("Impact")
+            .on("end", draw)
+            .start();
+        function draw(words) {
+            d3.select(svg_location).append("svg")
+                .attr("width", width)
+                .attr("height", height)
+                .append("g")
+                .attr("transform", "translate(" + [width >> 1, height >> 1] + ")")
+                .selectAll("text")
+                .data(words)
+                .enter().append("text")
+                .style("font-size", function (d) { return xScale(d.value) + "px"; })
+                .style("font-family", "Impact")
+                .style("fill", function (d, i) { return fill(i); })
+                .attr("text-anchor", "middle")
+                .attr("transform", function (d) {
+                    return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
                 })
-                ])
-                .range([10, 25]);
-
-            d3.layout.cloud().size([width, height])
-                .timeInterval(20)
-                .words(word_entries)
-                .fontSize(function (d) { return xScale(+d.value); })
-                .text(function (d) { return d.key; })
-                .rotate(function () { return ~~(Math.random() * 2) * 90; })
-                .font("Impact")
-                .on("end", draw)
-                .start();
-
-            function draw(words) {
-                d3.select(svg_location).append("svg")
-                    .attr("width", width)
-                    .attr("height", height)
-                    .append("g")
-                    .attr("transform", "translate(" + [width >> 1, height >> 1] + ")")
-                    .selectAll("text")
-                    .data(words)
-                    .enter().append("text")
-                    .style("font-size", function (d) { return xScale(d.value) + "px"; })
-                    .style("font-family", "Impact")
-                    .style("fill", function (d, i) { return fill(i); })
-                    .attr("text-anchor", "middle")
-                    .attr("transform", function (d) {
-                        return "translate(" + [d.x, d.y] + ")rotate(" + d.rotate + ")";
-                    })
-                    .text(function (d) { return d.key; });
-            }
-
-            d3.layout.cloud().stop();
+                .text(function (d) { return d.key; });
         }
-    </script>
+        d3.layout.cloud().stop();
+    }
+</script>
 </body>
 
 </html>
