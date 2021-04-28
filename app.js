@@ -4,7 +4,7 @@ let app = express();
 let fs = require('fs');
 
 nodejieba.load({
-    userDict: __dirname + './dict.txt'
+    userDict: __dirname + '/dict.txt'
 });
 
 app.set('view engine', 'ejs');
