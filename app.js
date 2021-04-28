@@ -1,13 +1,16 @@
 const nodejieba = require('nodejieba');
-const path = require('path');
 let express = require('express');
 let app = express();
 let fs = require('fs');
 
+nodejieba.load({
+    userDict: __dirname + './dict.txt'
+});
+
 app.set('view engine', 'ejs');
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb', extended: true}));
-app.use('/assets', express.static(path.resolve('./assets')));
+app.use('/assets', express.static(__dirname + '/assets'));
 
 app.get('/', (req, res) => res.render('index'));
 
@@ -37,12 +40,7 @@ app.post("/jieba", (req, res) => {
                 negative: [],
             }
 
-            if(dictMode == 5){
-                templateName = 'draw';
-            }else{
-                templateName = 'wordcloud';
-            }
-
+            templateName = dictMode == 5 ? 'draw' : 'wordcloud';
 
             data.forEach(x => {
                 if (moodKeys.indexOf(x.word) !== -1) {
@@ -61,7 +59,6 @@ app.post("/jieba", (req, res) => {
             break;
     }
 
-    console.log(data);
 
     res.render(templateName, {
         data: dictMode == 5 || dictMode == 6 ? JSON.stringify(data) : [...new Set(data)]
