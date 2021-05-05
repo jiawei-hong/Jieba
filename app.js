@@ -25,7 +25,6 @@ app.post("/jieba", (req, res) => {
     switch (dictMode) {
         case 2:
         case 3:
-
             if (dictMode == 2) {
                 data = data.filter(x => x.tag.charAt(0) == 'n')
             } else {
