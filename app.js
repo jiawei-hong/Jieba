@@ -17,76 +17,62 @@ app.use('/assets', express.static(path.join(path.dirname(''), ('/assets'))));
 app.get('/', (req, res) => res.render('index'));
 
 app.post("/jieba", (req, res) => {
-    let moodDict = Object.fromEntries(fs.readFileSync('mood.txt', 'utf8').split(/\n/).map(x => x.replace(/\r/, '').split(/\t|\s/)).map(x => x.filter(y => y !== '')));
-    let dictMode = parseInt(req.body.dictMode);
-    let data = nodejieba.tag(req.body.text);
     let templateName = 'jieba';
-    let datas = {};
+    let moodDict = [...fs.readFileSync('mood.txt','utf-8').matchAll(/([^\t]+?)\t(.+)/gm)].map(x => {
+        return {
+            word: x[1].replace(/\r|\n/g,''),
+            score: x[2].replace(/\t|\s/g, '')
+        }
+    });
+    let moodWords = moodDict.map(x => x.word);
+    let requestDictMode = parseInt(req.body.dictMode);
+    let requestText = nodejieba.tag(req.body.text);
+    let data = {};
 
-    switch (dictMode) {
-        case 1:
-        case 2:
-        case 3:
-            let partOfSpeech = dictMode === 2 ? 'n' : 'v';
+    if(requestDictMode <= 4){
+        let preData = requestText;
+        let partOfSpeech = requestDictMode == 2 ? 'n' : 'v';
 
-            if(dictMode !== 1)
-                data = data.filter(x => x.tag.charAt(0) === partOfSpeech);
+        if(requestDictMode >= 2 && requestDictMode <= 3)
+            preData = preData.filter(x => x.tag.charAt(0) === partOfSpeech);
+        else if (requestDictMode == 4)
+            preData = preData.filter(x => moodWords.indexOf(x.word) !== -1);
 
-            data = [...new Set(data.map(x => x.word))].map(x => nodejieba.tag(x)).flat();
+        preData.forEach(item => {
+            let moodData = requestDictMode == 4 ? moodDict[moodWords.indexOf(item.word)].score : item.tag;
 
-            data.forEach(x => {
-                if(Object.keys(datas).indexOf(x.tag) === - 1)
-                    datas[x.tag] = [];
+            if(Object.keys(data).indexOf(moodData) === -1)
+                data[moodData] = [];
 
-                datas[x.tag].push(x.word);
-            })
+            if(Object.values(data[moodData]).indexOf(item.word) === -1)
+                data[moodData].push(item.word);
+        })
 
-            data = datas;
+    } else {
+        let datasets = {
+            positive: [],
+            neutral: [],
+            negative: [],
+        }
 
-            break;
-        case 4:
-            data = data.filter(x => Object.keys(moodDict).indexOf(x.word) !== -1);
+        templateName = requestDictMode == 5 ? 'draw' : 'wordcloud';
 
-            data.forEach(item => {
-                let moodScore = moodDict[item.word];
+        
+        requestText.forEach(x => {
+            if (moodWords.indexOf(x.word) !== -1) {
+                let index = moodWords.indexOf(x.word);
 
-                if(Object.keys(datas).indexOf(moodScore) === -1)
-                    datas[moodScore] = [];
-
-                if(Object.values(datas[moodScore]).indexOf(item.word) === -1)
-                    datas[moodScore].push(item.word);
-            })
-
-            data = datas;
-
-            templateName = 'mood';
-            break;
-        case 5:
-        case 6:
-            let moodKeys = Object.keys(moodDict);
-            let datasets = {
-                positive: [],
-                neutral: [],
-                negative: [],
-            }
-
-            templateName = dictMode == 5 ? 'draw' : 'wordcloud';
-
-            data.forEach(x => {
-                if (moodKeys.indexOf(x.word) !== -1) {
-                    if (moodDict[x.word] == 0) {
-                        datasets.neutral.push(x.word);
-                    } else if (moodDict[x.word] < 0) {
-                        datasets.negative.push(x.word);
-                    } else {
-                        datasets.positive.push(x.word);
-                    }
+                if (moodDict[index].score == 0) {
+                    datasets.neutral.push(x.word);
+                } else if (moodDict[index].score < 0) {
+                    datasets.negative.push(x.word);
+                } else {
+                    datasets.positive.push(x.word);
                 }
-            })
+            }
+        })
 
-            data = JSON.stringify(datasets);
-
-            break;
+        data = JSON.stringify(datasets);
     }
 
     res.render(templateName, { data });
