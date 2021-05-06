@@ -1,23 +1,21 @@
 <%- include('layout'); %>
 
-<div class="container text-center mt-2">
-    <table class="table table-dark table-striped">
-        <thead>
-        <th>文字</th>
-        <th>情緒分數</th>
-        </thead>
-        <tbody>
-        <% for(let i=0;i < data.length;i++){ %>
-            <% Object.keys(data[i]).forEach(function(key){ %>
-                <tr>
-                    <td>
-                        <%= key %>
-                    </td>
-                    <td>
-                        <%= data[i][key] %>
-                    </td>
-                </tr>
-        <% })} %>
-        </tbody>
-    </table>
+<div class="container mt-2">
+    <div class="accordion">
+        <% Object.keys(data).forEach((item,i) => { %>
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="a<%= i %>">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#s<%= i %>" aria-expanded="true" aria-controls="s<%= i %>">
+                        <%= item %>
+                    </button>
+                </h2>
+
+                <div id="s<%= i %>" class="accordion-collapse collapse" aria-labelledby="a<%= i %>">
+                    <div class="accordion-body">
+                        <%= data[item].join(',') %>
+                    </div>
+                </div>
+            </div>
+        <% }); %>
+    </div>
 </div>

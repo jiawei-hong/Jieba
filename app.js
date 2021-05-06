@@ -21,19 +21,44 @@ app.post("/jieba", (req, res) => {
     let dictMode = parseInt(req.body.dictMode);
     let data = nodejieba.tag(req.body.text);
     let templateName = 'jieba';
+    let datas = {};
 
     switch (dictMode) {
+        case 1:
         case 2:
         case 3:
-            if (dictMode == 2) {
-                data = data.filter(x => x.tag.charAt(0) == 'n')
-            } else {
-                data = data.filter(x => x.tag.charAt(0) == 'v')
-            }
+            let partOfSpeech = dictMode === 2 ? 'n' : 'v';
+
+            if(dictMode !== 1)
+                data = data.filter(x => x.tag.charAt(0) === partOfSpeech);
+
             data = [...new Set(data.map(x => x.word))].map(x => nodejieba.tag(x)).flat();
+
+            data.forEach(x => {
+                if(Object.keys(datas).indexOf(x.tag) === - 1)
+                    datas[x.tag] = [];
+
+                datas[x.tag].push(x.word);
+            })
+
+            data = datas;
+
             break;
         case 4:
-            data = data.filter(x => Object.keys(moodDict).indexOf(x.word) !== -1).map(x => Object.fromEntries([[x.word, moodDict[x.word]]]));
+            data = data.filter(x => Object.keys(moodDict).indexOf(x.word) !== -1);
+
+            data.forEach(item => {
+                let moodScore = moodDict[item.word];
+
+                if(Object.keys(datas).indexOf(moodScore) === -1)
+                    datas[moodScore] = [];
+
+                if(Object.values(datas[moodScore]).indexOf(item.word) === -1)
+                    datas[moodScore].push(item.word);
+            })
+
+            data = datas;
+
             templateName = 'mood';
             break;
         case 5:

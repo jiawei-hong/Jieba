@@ -7,7 +7,6 @@
     <script>
         Highcharts.seriesTypes.wordcloud.prototype.deriveFontSize = function (relativeWeight) {
             var maxFontSize = 25;
-            // Will return a fontSize between 0px and 25px.
 
             if(relativeWeight < 15){
                 return Math.floor(maxFontSize * relativeWeight + 10);
@@ -29,8 +28,14 @@
             });
 
             Highcharts.chart(moodText, {
+                chart:{
+                    backgroundColor: '#101820FF'
+                },
                 title: {
-                    text: moodText
+                    text: moodText,
+                    style: {
+                        color: 'gold',
+                    }
                 },
                 series: [{
                     type: 'wordcloud',
