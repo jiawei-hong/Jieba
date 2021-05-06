@@ -17,7 +17,7 @@ app.use('/assets', express.static(path.join(path.dirname(''), ('/assets'))));
 app.get('/', (req, res) => res.render('index'));
 
 app.post("/jieba", (req, res) => {
-    let moodDict = Object.fromEntries(fs.readFileSync('mood.txt', 'utf8').split(/\n/).map(x => x.replace(/\r/, '').split('\t')).map(x => x.filter(y => y !== '')));
+    let moodDict = Object.fromEntries(fs.readFileSync('mood.txt', 'utf8').split(/\n/).map(x => x.replace(/\r/, '').split(/\t|\s/)).map(x => x.filter(y => y !== '')));
     let dictMode = parseInt(req.body.dictMode);
     let data = nodejieba.tag(req.body.text);
     let templateName = 'jieba';
